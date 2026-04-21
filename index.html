@@ -7,7 +7,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ТОНКИЙ РОЗОВЫЙ СКРОЛЛБАР */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(244, 114, 182, 0.4); border-radius: 10px; }
@@ -25,7 +24,6 @@
             overflow-x: hidden;
         }
         
-        /* ЭФФЕКТ ЖИДКОГО СТЕКЛА */
         .glass-card { 
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(16px);
@@ -71,13 +69,11 @@
             transition: opacity 1s ease-in-out, visibility 1s;
         }
 
-        /* Анимация шестеренки */
         #cog-icon {
             display: inline-block;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Модальное окно расписания */
         #full-schedule-modal {
             transition: opacity 0.5s ease-in-out;
         }
@@ -87,12 +83,12 @@
     
     <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pink-50/80 backdrop-blur-xl">
         <div class="text-6xl mb-4 animate-bounce" style="animation-duration: 2s;">🌸</div>
-        <h2 class="text-3xl font-bold text-pink-500 tracking-wide animate-pulse mb-2">Привет, Сонечка!</h2>
+        <h2 class="text-3xl font-bold text-pink-500 tracking-wide animate-pulse mb-2 text-center px-4">Привет, Сонечка!</h2>
         <p id="splash-compliment" class="text-pink-400 font-medium text-lg text-center px-4 drop-shadow-sm"></p>
     </div>
 
     <div id="full-schedule-modal" class="fixed inset-0 z-40 hidden flex-col bg-pink-50/85 backdrop-blur-xl p-4 overflow-y-auto opacity-0">
-        <div class="flex justify-between items-center mb-4 mt-2">
+        <div class="flex justify-between items-center mb-5 mt-2">
             <h2 class="text-2xl font-bold text-pink-600 drop-shadow-sm">Всё расписание 🗓️</h2>
             <button onclick="toggleFullSchedule()" class="glass-card w-10 h-10 rounded-full flex items-center justify-center text-lg hover:scale-110 active:scale-95 transition">❌</button>
         </div>
@@ -183,8 +179,6 @@
             const menu = document.getElementById('settings-menu');
             const cog = document.getElementById('cog-icon');
             menu.classList.toggle('is-open');
-            
-            // Анимация шестеренки
             if (menu.classList.contains('is-open')) {
                 cog.style.transform = 'rotate(180deg)';
             } else {
@@ -233,83 +227,85 @@
             }
         });
 
+        // БАЗА ДАННЫХ РАСПИСАНИЯ
         const SCHEDULE = {
             'ODD': {
                 1: [
-                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в PR', room: 'К-371'},
-                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований', room: 'К-159'}
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159', teacher: 'Не указан'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в системе связей с общественностью', room: 'К-371', teacher: 'Бондарева В.В.'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований в рекламе и PR', room: 'К-159', teacher: 'Не указан'}
                 ],
                 2: [
-                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Теория и практика связей с общественностью', room: 'К-235'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367'}
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Теория и практика связей с общественностью', room: 'К-235', teacher: 'Не указан'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367', teacher: 'Куренова Д.Г.'}
                 ],
                 3: [
-                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации', room: 'К-323'},
-                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в PR', room: 'К-323'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323'}
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации в рекламе', room: 'К-323', teacher: 'Жильцова М.С.'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в рекламной и PR-деятельности', room: 'К-323', teacher: 'Губин В.А.'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323', teacher: 'Кривошеева Е.В.'}
                 ],
                 4: [],
                 5: [
-                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура', room: 'Ф-Спорткомплекс'},
-                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'A-102 / A-402'},
-                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Правовое обеспечение', room: 'A-536'}
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура и спорт', room: 'Ф-Спорткомплекс', teacher: 'Коновалова М.А.'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'А-102 / А-402', teacher: 'Лытнева В.В. / Городова Е.А.'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Правовое обеспечение профессиональной деятельности', room: 'А-536', teacher: 'Халимонова Д.А.'}
                 ]
             },
             'EVEN': {
                 1: [
-                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в PR', room: 'К-371'},
-                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований', room: 'К-159'}
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159', teacher: 'Не указан'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в системе связей с общественностью', room: 'К-371', teacher: 'Бондарева В.В.'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований в рекламе и PR', room: 'К-159', teacher: 'Не указан'}
                 ],
                 2: [
-                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Кросс-культурные коммуникации', room: 'К-235'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367'}
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Кросс-культурные коммуникации в рекламе', room: 'К-235', teacher: 'Не указан'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367', teacher: 'Куренова Д.Г.'}
                 ],
                 3: [
-                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Теория и практика связей с общественностью', room: 'К-344'},
-                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации', room: 'К-323'},
-                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в PR', room: 'К-323'},
-                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323'}
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Теория и практика связей с общественностью', room: 'К-344', teacher: 'Жильцова М.С.'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации в рекламе', room: 'К-323', teacher: 'Жильцова М.С.'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в рекламной и PR-деятельности', room: 'К-323', teacher: 'Губин В.А.'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323', teacher: 'Кривошеева Е.В.'}
                 ],
                 4: [
-                    {num: 4, start: '13:20', end: '14:50', type: 'L', subj: 'Имиджмейкинг в PR', room: 'К-247'},
-                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Деловые коммуникации в PR', room: 'К-203'}
+                    {num: 4, start: '13:20', end: '14:50', type: 'L', subj: 'Имиджмейкинг в системе связей с общественностью', room: 'К-247', teacher: 'Не указан'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Деловые коммуникации в рекламной и PR-деятельности', room: 'К-203', teacher: 'Не указан'}
                 ],
                 5: [
-                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура', room: 'Ф-Спорткомплекс'},
-                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Правовое обеспечение', room: 'A-610'},
-                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Иностранный язык', room: 'A-421 / A-512'}
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура и спорт', room: 'Ф-Спорткомплекс', teacher: 'Коновалова М.А.'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Правовое обеспечение профессиональной деятельности', room: 'А-610', teacher: 'Халимонова Д.А.'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Иностранный язык', room: 'А-421 / А-512', teacher: 'Городова Е.А. / Лытнева В.В.'}
                 ]
             }
         };
 
-        // --- ЛОГИКА ОКНА "ВСЕ РАСПИСАНИЕ" ---
         const dayNames = {1: 'Понедельник', 2: 'Вторник', 3: 'Среда', 4: 'Четверг', 5: 'Пятница', 6: 'Суббота'};
         
         function renderFullSchedule() {
             let html = '';
             ['ODD', 'EVEN'].forEach(weekKey => {
                 const weekName = weekKey === 'ODD' ? 'Нечетная неделя (1, 3...)' : 'Четная неделя (2, 4...)';
-                // Липкий заголовок недели
                 html += `<h3 class="text-lg font-bold text-pink-600 mb-4 mt-2 sticky top-0 bg-white/40 backdrop-blur-md py-2 px-4 rounded-2xl z-10 shadow-sm border border-white/50">${weekName}</h3>`;
 
                 Object.keys(SCHEDULE[weekKey]).forEach(dayStr => {
                     const dayNum = parseInt(dayStr);
                     const classes = SCHEDULE[weekKey][dayNum];
-                    
                     if (classes.length > 0) {
-                        html += `<div class="mb-6"><h4 class="text-md font-bold text-gray-800 ml-2 mb-3 drop-shadow-sm">${dayNames[dayNum]}</h4><div class="space-y-3">`;
+                        html += `<div class="mb-6"><h4 class="text-md font-bold text-gray-800 ml-2 mb-3 drop-shadow-sm font-bold uppercase tracking-wider text-[10px] text-gray-500">${dayNames[dayNum]}</h4><div class="space-y-3">`;
                         classes.forEach(cls => {
                             const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
                             html += `
                                 <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
-                                    <div class="pr-2">
-                                        <h5 class="text-sm font-bold text-gray-800 drop-shadow-sm leading-tight mb-1">${cls.subj}</h5>
-                                        <p class="text-xs text-gray-700 font-medium">${cls.room} • ${typeText}</p>
+                                    <div class="pr-2 flex-1">
+                                        <h5 class="text-sm font-bold text-gray-800 leading-tight mb-2">${cls.subj}</h5>
+                                        <div class="flex flex-wrap gap-x-3 gap-y-1">
+                                            <p class="text-[11px] text-gray-700 font-medium">🚪 ${cls.room}</p>
+                                            <p class="text-[11px] text-gray-700 font-medium">👤 ${cls.teacher}</p>
+                                            <p class="text-[11px] text-pink-600 font-bold">${typeText}</p>
+                                        </div>
                                     </div>
                                     <div class="text-right whitespace-nowrap pl-2">
-                                        <p class="text-xs font-bold text-pink-600 bg-white/70 px-2 py-1 rounded-full border border-white/50">${cls.start}</p>
+                                        <p class="text-[11px] font-bold text-pink-600 bg-white/70 px-2 py-1 rounded-full border border-white/50 shadow-sm">${cls.start} - ${cls.end}</p>
                                     </div>
                                 </div>`;
                         });
@@ -322,34 +318,21 @@
 
         function toggleFullSchedule() {
             const modal = document.getElementById('full-schedule-modal');
-            
             if (modal.classList.contains('hidden')) {
-                // Открываем
-                if (!modal.dataset.rendered) {
-                    renderFullSchedule();
-                    modal.dataset.rendered = 'true';
-                }
+                if (!modal.dataset.rendered) { renderFullSchedule(); modal.dataset.rendered = 'true'; }
                 modal.classList.remove('hidden');
-                // Маленький хак для запуска CSS-анимации после снятия hidden
                 void modal.offsetWidth; 
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
-                document.body.style.overflow = 'hidden'; // Убираем скролл с заднего фона
+                document.body.style.overflow = 'hidden';
             } else {
-                // Закрываем
                 modal.classList.remove('opacity-100');
                 modal.classList.add('opacity-0');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = ''; // Возвращаем скролл
-                }, 500); // Ждем пока закончится анимация затухания
+                setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 500);
             }
         }
-        // ------------------------------------
 
-        function getMoscowTime() {
-            return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
-        }
+        function getMoscowTime() { return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"})); }
 
         function getWeekType(date) {
             const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -371,119 +354,84 @@
             const now = getMoscowTime();
             const weekType = getWeekType(now);
             const dayOfWeek = now.getDay(); 
-            
             document.getElementById('subtitle').innerText = `Сегодня ${now.toLocaleDateString('ru-RU')} • ${weekType === 'EVEN' ? 'Четная' : 'Нечетная'} неделя`;
-
             const todayClasses = SCHEDULE[weekType][dayOfWeek] || [];
             const container = document.getElementById('schedule-container');
             
             if (todayClasses.length === 0) {
-                container.innerHTML = `
-                    <div class="glass-card rounded-3xl p-8 text-center">
-                        <div class="text-4xl mb-3">🌸</div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2>
-                        <p class="text-gray-600 text-sm font-medium">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
-                    </div>`;
+                container.innerHTML = `<div class="glass-card rounded-3xl p-8 text-center"><div class="text-4xl mb-3">🌸</div><h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2><p class="text-gray-600 text-sm font-medium">Можно отдыхать. Хорошего дня!</p></div>`;
                 return;
             }
 
-            let currentClass = null;
-            let nextClasses = [];
-            let isBreak = false;
-            let breakEndTime = null;
+            let currentClass = null; let nextClasses = []; let isBreak = false; let breakEndTime = null;
 
             todayClasses.forEach((cls, index) => {
-                const start = parseTimeStr(cls.start, now);
-                const end = parseTimeStr(cls.end, now);
-
-                if (now >= start && now <= end) {
-                    currentClass = cls;
-                } else if (now < start) {
+                const start = parseTimeStr(cls.start, now); const end = parseTimeStr(cls.end, now);
+                if (now >= start && now <= end) { currentClass = cls; }
+                else if (now < start) {
                     nextClasses.push(cls);
                     if (index > 0) {
                         const prevEnd = parseTimeStr(todayClasses[index-1].end, now);
-                        if (now > prevEnd && now < start && !currentClass) {
-                            isBreak = true;
-                            breakEndTime = start;
-                        }
-                    } else if (!currentClass && index === 0) {
-                        isBreak = true; 
-                        breakEndTime = start;
-                    }
+                        if (now > prevEnd && now < start && !currentClass) { isBreak = true; breakEndTime = start; }
+                    } else if (!currentClass && index === 0) { isBreak = true; breakEndTime = start; }
                 }
             });
 
             let html = '';
-
             if (!currentClass && nextClasses.length === 0) {
-                container.innerHTML = `
-                    <div class="glass-card rounded-3xl p-8 text-center">
-                        <div class="text-4xl mb-3">✨</div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2>
-                        <p class="text-gray-600 text-sm font-medium">Все пары закончились. Приятного вечера!</p>
-                    </div>`;
+                container.innerHTML = `<div class="glass-card rounded-3xl p-8 text-center"><div class="text-4xl mb-3">✨</div><h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2><p class="text-gray-600 text-sm font-medium">Все пары закончились. Приятного вечера!</p></div>`;
                 return;
             }
 
             if (currentClass) {
-                const start = parseTimeStr(currentClass.start, now);
-                const end = parseTimeStr(currentClass.end, now);
-                const totalDuration = end - start;
-                const passed = now - start;
-                let percentage = (passed / totalDuration) * 100;
-                percentage = Math.max(0, Math.min(100, percentage)); 
-                
+                const start = parseTimeStr(currentClass.start, now); const end = parseTimeStr(currentClass.end, now);
+                const totalDuration = end - start; const passed = now - start;
+                let percentage = Math.max(0, Math.min(100, (passed / totalDuration) * 100)); 
                 const minsLeft = Math.ceil((end - now) / 60000);
                 const typeText = currentClass.type === 'L' ? 'Лекция' : 'Практика';
-
                 html += `
                     <div class="glass-card rounded-3xl p-5 mb-5 relative overflow-hidden">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-bold text-pink-500 uppercase tracking-wider">Идет пара 🐾</span>
-                            <span class="text-xs font-bold bg-white/70 text-pink-600 px-2 py-1 rounded-full border border-white/50">${currentClass.start} - ${currentClass.end}</span>
+                            <span class="text-[10px] font-bold text-pink-500 uppercase tracking-wider">Идет пара 🐾</span>
+                            <span class="text-[11px] font-bold bg-white/70 text-pink-600 px-2 py-1 rounded-full border border-white/50">${currentClass.start} - ${currentClass.end}</span>
                         </div>
-                        <h2 class="text-lg font-bold text-gray-800 mb-1 drop-shadow-sm">${currentClass.subj}</h2>
-                        <p class="text-sm text-gray-700 mb-4 font-medium">Ауд: ${currentClass.room} • ${typeText}</p>
-
-                        <div class="w-full glass-progress-bg rounded-full h-3 mb-1 overflow-hidden">
-                            <div class="glass-progress-fill h-3 rounded-full" style="width: ${percentage}%"></div>
+                        <h2 class="text-lg font-bold text-gray-800 mb-2 drop-shadow-sm">${currentClass.subj}</h2>
+                        <div class="flex flex-col gap-1 mb-4">
+                            <p class="text-xs text-gray-700 font-medium">👤 ${currentClass.teacher}</p>
+                            <p class="text-xs text-gray-700 font-medium">🚪 ${currentClass.room} • ${typeText}</p>
                         </div>
-                        <div class="text-right text-xs text-pink-600 font-bold drop-shadow-sm">Осталось ${minsLeft} мин</div>
+                        <div class="w-full glass-progress-bg rounded-full h-3 mb-1 overflow-hidden"><div class="glass-progress-fill h-3 rounded-full" style="width: ${percentage}%"></div></div>
+                        <div class="text-right text-[10px] text-pink-600 font-bold">Осталось ${minsLeft} мин</div>
                     </div>`;
             } 
             else if (isBreak && breakEndTime) {
                 const minsLeft = Math.ceil((breakEndTime - now) / 60000);
-                html += `
-                    <div class="glass-card rounded-3xl p-5 mb-5 text-center">
-                        <h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2>
-                        <p class="text-sm text-gray-700 font-medium">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p>
-                    </div>`;
+                html += `<div class="glass-card rounded-3xl p-5 mb-5 text-center"><h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2><p class="text-sm text-gray-700 font-medium">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p></div>`;
             }
 
             if (nextClasses.length > 0) {
-                html += `<h3 class="text-md font-bold text-pink-600 drop-shadow-sm ml-2 mb-3 mt-2">Дальше по расписанию:</h3><div class="space-y-3">`;
-                
+                html += `<h3 class="text-md font-bold text-pink-600 drop-shadow-sm ml-2 mb-3 mt-2 font-bold uppercase tracking-widest text-[10px]">Дальше по расписанию:</h3><div class="space-y-3">`;
                 nextClasses.forEach((cls) => {
                     const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
                     html += `
                         <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
-                            <div class="pr-4">
-                                <h4 class="text-sm font-bold text-gray-800 drop-shadow-sm">${cls.subj}</h4>
-                                <p class="text-xs text-gray-700 font-medium">${cls.room} • ${typeText}</p>
+                            <div class="pr-2 flex-1">
+                                <h4 class="text-sm font-bold text-gray-800 drop-shadow-sm leading-tight mb-1">${cls.subj}</h4>
+                                <div class="flex flex-col gap-0.5 mt-1">
+                                    <p class="text-[11px] text-gray-700 font-medium">👤 ${cls.teacher}</p>
+                                    <p class="text-[11px] text-gray-600">🚪 ${cls.room} • ${typeText}</p>
+                                </div>
                             </div>
                             <div class="text-right whitespace-nowrap pl-2">
-                                <p class="text-xs font-bold text-pink-600 bg-white/70 px-2 py-1 rounded-full border border-white/50">${cls.start}</p>
+                                <p class="text-[11px] font-bold text-pink-600 bg-white/70 px-2 py-1 rounded-full border border-white/50">${cls.start} - ${cls.end}</p>
                             </div>
                         </div>`;
                 });
                 html += `</div>`;
             }
-
             container.innerHTML = html;
         }
-
-        updateUI();
-        setInterval(updateUI, 1000);
+        updateUI(); setInterval(updateUI, 1000);
     </script>
 </body>
 </html>
