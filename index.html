@@ -78,9 +78,17 @@
             transition: opacity 0.3s ease-in-out;
         }
 
-        /* Моноширинный шрифт для бегущих миллисекунд, чтобы текст не дергался */
         .time-ms-font {
             font-variant-numeric: tabular-nums;
+        }
+
+        /* Плавное появление картинки */
+        @keyframes fadeInImg {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-img-in {
+            animation: fadeInImg 0.4s ease-out forwards;
         }
     </style>
 </head>
@@ -96,7 +104,7 @@
         <button onclick="closeMeme()" class="absolute top-6 right-6 glass-card w-12 h-12 rounded-full flex items-center justify-center text-xl hover:scale-110 active:scale-95 transition">❌</button>
         <h2 class="text-2xl font-bold text-pink-500 mb-6 drop-shadow-sm text-center">Минутка отдыха 😹</h2>
         
-        <div id="meme-content" class="w-full max-w-sm max-h-[60vh] rounded-3xl overflow-hidden shadow-lg border-2 border-white/70 mb-8 flex items-center justify-center bg-white/30 p-2">
+        <div id="meme-content" class="w-full max-w-sm min-h-[250px] max-h-[60vh] rounded-3xl overflow-hidden shadow-lg border-2 border-white/70 mb-8 flex items-center justify-center bg-white/50 p-2">
             </div>
         
         <button onclick="loadMeme()" class="glass-card w-full max-w-sm py-4 rounded-3xl text-sm font-bold text-pink-500 shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -165,21 +173,34 @@
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
 
-        // --- ЛОГИКА МЕМОВ ---
+        // --- ЛОГИКА МЕМОВ (НАДЕЖНЫЕ ССЫЛКИ GIPHY) ---
         const memeUrls = [
-            'https://media.tenor.com/PytWA2vK1qEAAAAd/cat-cat-meme.gif', // Cat typing
-            'https://media.tenor.com/Z8hzXVQ4oKMAAAAd/cat-dance.gif',    // Cat dance
-            'https://media.tenor.com/y3_jCj7E1cQAAAAC/vibing-cat.gif',   // Vibing cat
-            'https://media.tenor.com/Hn2T4uF-H-QAAAAC/cat-meme.gif',     // Huh cat
-            'https://media.tenor.com/nJ_a2w_8nBcAAAAd/cat-funny.gif',    // Happy happy
-            'https://media.tenor.com/71B9vV7Ew4IAAAAC/cat-typing.gif',   // Serious typing cat
-            'https://media.tenor.com/xTszrG3c6tEAAAAC/cat-kiss.gif'      // Kissing cat
+            'https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif', // Kitten attacking
+            'https://media.giphy.com/media/GeimqsH0TLDt4tScGw/giphy.gif', // Happy dancing cat
+            'https://media.giphy.com/media/Lq0h93752f6J9tijrh/giphy.gif', // Vibing cat
+            'https://media.giphy.com/media/MDJgKEjy4hJbL2w4D9/giphy.gif', // Bongo cat
+            'https://media.giphy.com/media/nR4L10XlJcSeQ/giphy.gif',     // Cat licking/nodding
+            'https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif',     // Cute blinking cat
+            'https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif',    // Head tilt cat
+            'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif'  // Cat rolling
         ];
 
         function loadMeme() {
             const container = document.getElementById('meme-content');
+            // Индикатор загрузки (пока скачивается тяжелая гифка)
+            container.innerHTML = '<div class="py-10 text-pink-500 font-bold animate-pulse text-sm">Ищем котика... 🐾</div>';
+            
             const randomUrl = memeUrls[Math.floor(Math.random() * memeUrls.length)];
-            container.innerHTML = `<img src="${randomUrl}" class="w-full h-auto rounded-2xl shadow-inner">`;
+            
+            // Загружаем картинку в память, и только потом показываем
+            const img = new Image();
+            img.src = randomUrl;
+            img.className = "w-full h-auto rounded-2xl animate-img-in";
+            
+            img.onload = () => {
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
         }
 
         function openMeme() {
@@ -233,7 +254,7 @@
         };
 
         let slideshowInterval = null;
-        let isMsMode = false; // Состояние режима миллисекунд
+        let isMsMode = false;
 
         function toggleSettings() {
             const menu = document.getElementById('settings-menu');
@@ -284,7 +305,7 @@
                 btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-pink-500 text-white shadow-lg border border-pink-400';
                 if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('msState', 'on');
             }
-            updateFastTimers(); // Мгновенно обновить текст
+            updateFastTimers(); 
         }
 
         window.Telegram.WebApp.CloudStorage.getItems(['selectedBg', 'slideshowState', 'msState'], function(error, values) {
@@ -295,7 +316,6 @@
             }
         });
 
-        // БАЗА ДАННЫХ РАСПИСАНИЯ
         const SCHEDULE = {
             'ODD': {
                 1: [
@@ -427,7 +447,6 @@
             return d;
         }
 
-        // --- ЛОГИКА ОТОБРАЖЕНИЯ И ТАЙМЕРОВ ---
         function updateFastTimers() {
             const now = getMoscowTime().getTime();
             document.querySelectorAll('.time-left-display').forEach(el => {
@@ -451,7 +470,6 @@
             });
         }
 
-        // Запускаем супер-быстрый интервал для миллисекунд (обновляется 20 раз в секунду)
         setInterval(updateFastTimers, 50);
 
         function updateUI() {
@@ -509,7 +527,7 @@
                     </div>`;
             } 
             else if (isBreak && breakEndTime) {
-                html += `<div class="glass-card rounded-3xl p-5 mb-5 text-center"><h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2><p class="text-sm text-gray-700 font-medium"><span class="text-pink-600 font-bold time-ms-font time-left-display" data-prefix="Начнется через " data-end-time="${breakEndTime.getTime()}"></span></p></div>`;
+                html += `<div class="glass-card rounded-3xl p-5 mb-5 text-center"><h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2><p class="text-sm text-gray-700 font-medium"><span class="text-pink-600 font-bold time-ms-font time-left-display" data-prefix="Пары начнутся через " data-end-time="${breakEndTime.getTime()}"></span></p></div>`;
             }
 
             if (nextClasses.length > 0) {
@@ -533,10 +551,9 @@
                 html += `</div>`;
             }
             container.innerHTML = html;
-            updateFastTimers(); // Сразу проставляем текст таймеров, чтобы не было пустых мест
+            updateFastTimers(); 
         }
         
-        // Этот интервал отвечает только за отрисовку самих блоков и прогресс-бара раз в секунду
         updateUI(); setInterval(updateUI, 1000);
     </script>
 </body>
