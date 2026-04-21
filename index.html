@@ -80,6 +80,11 @@
     </div>
 
     <script>
+        // Сообщаем Телеграму, что приложение готово
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
+
         const backgrounds = {
             'default': '', 
             'cat1': './backgrounds/1.jpg',
@@ -105,58 +110,62 @@
             menu.classList.toggle('hidden');
         }
 
-        // Обновленная функция смены фона (текст всегда розовый, так как под ним белое стекло)
-        function setBg(key) {
+        // Функция смены фона (теперь сохраняет в ОБЛАКО ТЕЛЕГРАМА)
+        function setBg(key, saveToCloud = true) {
             const body = document.getElementById('body-bg');
             if (key === 'default' || !backgrounds[key]) {
                 body.style.backgroundImage = 'none';
             } else {
                 body.style.backgroundImage = `url('${backgrounds[key]}')`;
             }
-            localStorage.setItem('selectedBg', key);
+            
+            // Сохраняем надежно в Telegram Cloud
+            if (saveToCloud) {
+                window.Telegram.WebApp.CloudStorage.setItem('selectedBg', key);
+            }
         }
 
-        function toggleSlideshow() {
+        // Включение/выключение слайдера (сохраняет в ОБЛАКО ТЕЛЕГРАМА)
+        function toggleSlideshow(saveToCloud = true) {
             const btn = document.getElementById('slide-btn');
+            
             if (slideshowInterval) {
-                // Если слайдер работал — выключаем
+                // ВЫКЛЮЧАЕМ
                 clearInterval(slideshowInterval);
                 slideshowInterval = null;
                 btn.innerText = 'Режим слайдера: ВЫКЛ';
                 btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-white/60 text-pink-500 border border-white/50';
                 
-                // ЗАПОМИНАЕМ, ЧТО ВЫКЛЮЧИЛИ
-                localStorage.setItem('slideshowState', 'off'); 
+                if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('slideshowState', 'off');
             } else {
-                // Если слайдер стоял — включаем
+                // ВКЛЮЧАЕМ
                 let keys = Object.keys(backgrounds).filter(k => k !== 'default');
                 let i = 0;
                 slideshowInterval = setInterval(() => {
-                    setBg(keys[i]);
+                    setBg(keys[i], false); // Меняем фон, но не перезаписываем базовый выбор пользователя
                     i = (i + 1) % keys.length;
                 }, 7000); 
                 btn.innerText = 'Режим слайдера: ВКЛ';
                 btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg border border-pink-400';
                 
-                // ЗАПОМИНАЕМ, ЧТО ВКЛЮЧИЛИ
-                localStorage.setItem('slideshowState', 'on'); 
-                setBg(keys[0]);
+                if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('slideshowState', 'on');
+                setBg(keys[0], false);
             }
         }
 
-        // 1. Сначала загружаем сохраненный фон
-        const saved = localStorage.getItem('selectedBg');
-        if (saved) setBg(saved);
-
-        // 2. Затем проверяем, был ли включен слайдер в прошлый раз
-        const savedSlideshow = localStorage.getItem('slideshowState');
-        if (savedSlideshow === 'on') {
-            toggleSlideshow(); // Если был включен, "нажимаем" кнопку программно
-        }
-
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-        window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
+        // === МАГИЯ ТЕЛЕГРАМА: ЧИТАЕМ ИЗ ОБЛАКА ПРИ ЗАПУСКЕ ===
+        window.Telegram.WebApp.CloudStorage.getItems(['selectedBg', 'slideshowState'], function(error, values) {
+            if (!error && values) {
+                // 1. Восстанавливаем фон
+                if (values.selectedBg) {
+                    setBg(values.selectedBg, false);
+                }
+                // 2. Восстанавливаем слайдер, если он был включен
+                if (values.slideshowState === 'on') {
+                    toggleSlideshow(false); 
+                }
+            }
+        });
 
         const SCHEDULE = {
             'ODD': {
