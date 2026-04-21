@@ -10,61 +10,226 @@
         /* Прячем скроллбар для красоты */
         body::-webkit-scrollbar { display: none; }
         body { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Плавность для прогресс-бара */
+        .progress-bar-fill { transition: width 1s linear; }
     </style>
 </head>
-<body class="bg-pink-50 font-sans text-gray-800 p-4">
+<body class="bg-pink-50 font-sans text-gray-800 p-4 pb-16">
 
     <div class="text-center mt-4 mb-6">
         <h1 class="text-2xl font-bold text-pink-500">Привет, Соня! 🐈</h1>
-        <p class="text-sm text-pink-400 mt-1">Хорошего учебного дня 🌸</p>
+        <p class="text-sm text-pink-400 mt-1" id="subtitle">Синхронизация времени...</p>
     </div>
 
-    <div class="bg-white rounded-3xl p-5 shadow-sm border border-pink-100 mb-4 relative overflow-hidden">
-        <div class="flex justify-between items-center mb-3">
-            <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Идет пара 🐾</span>
-            <span class="text-xs font-bold bg-pink-100 text-pink-500 px-2 py-1 rounded-full">11:20 - 12:50</span>
-        </div>
-        
-        <h2 class="text-lg font-bold mb-1">Основы теории коммуникации</h2>
-        <p class="text-sm text-gray-500 mb-4">Ауд: К-159 • Лекция</p>
+    <div id="schedule-container"></div>
 
-        <div class="w-full bg-pink-50 rounded-full h-3 mb-1">
-            <div class="bg-gradient-to-r from-pink-300 to-pink-500 h-3 rounded-full" style="width: 65%"></div>
-        </div>
-        <div class="text-right text-xs text-pink-400 font-medium">
-            Осталось 40 мин
-        </div>
-    </div>
-
-    <h3 class="text-md font-bold text-gray-700 ml-2 mb-3">Дальше по расписанию:</h3>
-    
-    <div class="space-y-3">
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between opacity-70">
-            <div>
-                <h4 class="text-sm font-bold text-gray-700">Имиджмейкинг в PR</h4>
-                <p class="text-xs text-gray-500">К-371 • Практика</p>
-            </div>
-            <div class="text-right">
-                <p class="text-sm font-bold text-gray-600">13:20</p>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between opacity-70">
-            <div>
-                <h4 class="text-sm font-bold text-gray-700">Методы исследований</h4>
-                <p class="text-xs text-gray-500">К-159 • Лекция</p>
-            </div>
-            <div class="text-right">
-                <p class="text-sm font-bold text-gray-600">15:00</p>
-            </div>
-        </div>
+    <div class="fixed bottom-0 left-0 w-full text-center py-3 bg-gray-900 text-gray-400 text-xs">
+        @sonya_uni_schedule_bot
     </div>
 
     <script>
-        // Сообщаем Телеграму, что приложение готово к отображению
+        // Сообщаем Телеграму, что приложение готово
         window.Telegram.WebApp.ready();
-        // Можно развернуть приложение на весь экран
         window.Telegram.WebApp.expand();
+        window.Telegram.WebApp.setHeaderColor('#FDF2F8'); // bg-pink-50
+
+        // Полное расписание перенесенное в JavaScript
+        const SCHEDULE = {
+            'ODD': {
+                1: [ // Понедельник (1)
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в PR', room: 'К-371'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований', room: 'К-159'}
+                ],
+                2: [ // Вторник
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Теория и практика связей с общественностью', room: 'К-235'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367'}
+                ],
+                3: [ // Среда
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации', room: 'К-323'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в PR', room: 'К-323'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323'}
+                ],
+                4: [], // Четверг
+                5: [ // Пятница
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура', room: 'Ф-Спорткомплекс'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'A-102 / A-402'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Правовое обеспечение', room: 'A-536'}
+                ]
+            },
+            'EVEN': {
+                1: [
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в PR', room: 'К-371'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований', room: 'К-159'}
+                ],
+                2: [
+                    {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Кросс-культурные коммуникации', room: 'К-235'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367'}
+                ],
+                3: [
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Теория и практика связей с общественностью', room: 'К-344'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации', room: 'К-323'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в PR', room: 'К-323'},
+                    {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323'}
+                ],
+                4: [
+                    {num: 4, start: '13:20', end: '14:50', type: 'L', subj: 'Имиджмейкинг в PR', room: 'К-247'},
+                    {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Деловые коммуникации в PR', room: 'К-203'}
+                ],
+                5: [
+                    {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура', room: 'Ф-Спорткомплекс'},
+                    {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Правовое обеспечение', room: 'A-610'},
+                    {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Иностранный язык', room: 'A-421 / A-512'}
+                ]
+            }
+        };
+
+        // Вспомогательные функции времени
+        function getMoscowTime() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
+        }
+
+        function getWeekType(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+            return (weekNo % 2 === 0) ? 'EVEN' : 'ODD';
+        }
+
+        function parseTimeStr(timeStr, baseDate) {
+            const [hours, minutes] = timeStr.split(':');
+            const d = new Date(baseDate);
+            d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            return d;
+        }
+
+        function updateUI() {
+            const now = getMoscowTime();
+            const weekType = getWeekType(now);
+            const dayOfWeek = now.getDay(); // 0 = ВС, 1 = ПН ...
+            
+            document.getElementById('subtitle').innerText = `Сегодня ${now.toLocaleDateString('ru-RU')} • ${weekType === 'EVEN' ? 'Четная' : 'Нечетная'} неделя`;
+
+            const todayClasses = SCHEDULE[weekType][dayOfWeek] || [];
+            const container = document.getElementById('schedule-container');
+            
+            if (todayClasses.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-pink-100 mt-10">
+                        <div class="text-4xl mb-3">🌸</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2>
+                        <p class="text-gray-500 text-sm">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
+                    </div>`;
+                return;
+            }
+
+            let currentClass = null;
+            let nextClasses = [];
+            let isBreak = false;
+            let breakEndTime = null;
+
+            // Определяем статусы пар
+            todayClasses.forEach((cls, index) => {
+                const start = parseTimeStr(cls.start, now);
+                const end = parseTimeStr(cls.end, now);
+
+                if (now >= start && now <= end) {
+                    currentClass = cls;
+                } else if (now < start) {
+                    nextClasses.push(cls);
+                    // Проверяем, не перерыв ли сейчас
+                    if (index > 0) {
+                        const prevEnd = parseTimeStr(todayClasses[index-1].end, now);
+                        if (now > prevEnd && now < start && !currentClass) {
+                            isBreak = true;
+                            breakEndTime = start;
+                        }
+                    } else if (!currentClass && index === 0) {
+                        isBreak = true; // Утро до первой пары
+                        breakEndTime = start;
+                    }
+                }
+            });
+
+            let html = '';
+
+            // Если пары закончились
+            if (!currentClass && nextClasses.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-pink-100 mt-10">
+                        <div class="text-4xl mb-3">✨</div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2>
+                        <p class="text-gray-500 text-sm">Все пары закончились. Приятного вечера!</p>
+                    </div>`;
+                return;
+            }
+
+            // Рендер активной пары
+            if (currentClass) {
+                const start = parseTimeStr(currentClass.start, now);
+                const end = parseTimeStr(currentClass.end, now);
+                const totalDuration = end - start;
+                const passed = now - start;
+                let percentage = (passed / totalDuration) * 100;
+                percentage = Math.max(0, Math.min(100, percentage)); // Ограничитель 0-100
+                
+                const minsLeft = Math.ceil((end - now) / 60000);
+                const typeText = currentClass.type === 'L' ? 'Лекция' : 'Практика';
+
+                html += `
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-pink-100 mb-6 relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Идет пара 🐾</span>
+                            <span class="text-xs font-bold bg-pink-100 text-pink-500 px-2 py-1 rounded-full">${currentClass.start} - ${currentClass.end}</span>
+                        </div>
+                        <h2 class="text-lg font-bold mb-1">${currentClass.subj}</h2>
+                        <p class="text-sm text-gray-500 mb-4">Ауд: ${currentClass.room} • ${typeText}</p>
+
+                        <div class="w-full bg-pink-50 rounded-full h-3 mb-1 overflow-hidden">
+                            <div class="progress-bar-fill bg-gradient-to-r from-pink-300 to-pink-500 h-3 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="text-right text-xs text-pink-400 font-medium">Осталось ${minsLeft} мин</div>
+                    </div>`;
+            } 
+            // Рендер перерыва
+            else if (isBreak && breakEndTime) {
+                const minsLeft = Math.ceil((breakEndTime - now) / 60000);
+                html += `
+                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-pink-100 mb-6 text-center">
+                        <h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2>
+                        <p class="text-sm text-gray-500">Следующая пара начнется через <span class="text-pink-500 font-bold">${minsLeft} мин</span></p>
+                    </div>`;
+            }
+
+            // Рендер следующих пар
+            if (nextClasses.length > 0) {
+                html += `<h3 class="text-md font-bold text-gray-700 ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
+                
+                nextClasses.forEach(cls => {
+                    const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
+                    html += `
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between opacity-75">
+                            <div class="pr-4">
+                                <h4 class="text-sm font-bold text-gray-700">${cls.subj}</h4>
+                                <p class="text-xs text-gray-500">${cls.room} • ${typeText}</p>
+                            </div>
+                            <div class="text-right whitespace-nowrap">
+                                <p class="text-sm font-bold text-gray-600">${cls.start}</p>
+                            </div>
+                        </div>`;
+                });
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Запускаем сразу и обновляем каждую секунду для плавности прогресс-бара
+        updateUI();
+        setInterval(updateUI, 1000);
     </script>
 </body>
 </html>
