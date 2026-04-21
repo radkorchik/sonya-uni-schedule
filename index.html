@@ -108,7 +108,7 @@
             </div>
         
         <button onclick="loadMeme()" class="glass-card w-full max-w-sm py-4 rounded-3xl text-sm font-bold text-pink-500 shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
-            <span>🎲</span> Показать другой мем
+            <span>🎲</span> Показать другого котика
         </button>
     </div>
 
@@ -173,34 +173,35 @@
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
 
-        // --- ЛОГИКА МЕМОВ (НАДЕЖНЫЕ ССЫЛКИ GIPHY) ---
-        const memeUrls = [
-            'https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif', // Kitten attacking
-            'https://media.giphy.com/media/GeimqsH0TLDt4tScGw/giphy.gif', // Happy dancing cat
-            'https://media.giphy.com/media/Lq0h93752f6J9tijrh/giphy.gif', // Vibing cat
-            'https://media.giphy.com/media/MDJgKEjy4hJbL2w4D9/giphy.gif', // Bongo cat
-            'https://media.giphy.com/media/nR4L10XlJcSeQ/giphy.gif',     // Cat licking/nodding
-            'https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif',     // Cute blinking cat
-            'https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif',    // Head tilt cat
-            'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif'  // Cat rolling
-        ];
-
-        function loadMeme() {
+        // --- ЛОГИКА МЕМОВ (Загрузка случайных котиков из интернета) ---
+        async function loadMeme() {
             const container = document.getElementById('meme-content');
-            // Индикатор загрузки (пока скачивается тяжелая гифка)
-            container.innerHTML = '<div class="py-10 text-pink-500 font-bold animate-pulse text-sm">Ищем котика... 🐾</div>';
+            // Индикатор загрузки
+            container.innerHTML = '<div class="py-10 text-pink-500 font-bold animate-pulse text-sm">Ищем котика в интернете... 🐾</div>';
             
-            const randomUrl = memeUrls[Math.floor(Math.random() * memeUrls.length)];
-            
-            // Загружаем картинку в память, и только потом показываем
-            const img = new Image();
-            img.src = randomUrl;
-            img.className = "w-full h-auto rounded-2xl animate-img-in";
-            
-            img.onload = () => {
-                container.innerHTML = '';
-                container.appendChild(img);
-            };
+            try {
+                // Обращаемся к публичному API с котиками (только GIF)
+                const response = await fetch('https://api.thecatapi.com/v1/images/search?mime_types=gif');
+                const data = await response.json();
+                const randomUrl = data[0].url;
+                
+                // Загружаем картинку в память
+                const img = new Image();
+                img.src = randomUrl;
+                img.className = "w-full h-auto rounded-2xl shadow-inner animate-img-in";
+                
+                img.onload = () => {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                };
+                
+                img.onerror = () => {
+                    container.innerHTML = '<div class="py-10 text-pink-500 font-bold text-sm">Котик сбежал 😿 Попробуй еще!</div>';
+                };
+            } catch (error) {
+                // Если нет интернета или API недоступно
+                container.innerHTML = '<div class="py-10 text-pink-500 font-bold text-sm text-center">Не удалось найти котика 😿<br>Проверь интернет!</div>';
+            }
         }
 
         function openMeme() {
