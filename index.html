@@ -7,49 +7,60 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body::-webkit-scrollbar { display: none; }
-        body { -ms-overflow-style: none; scrollbar-width: none; transition: background 0.5s ease; background-size: cover; background-position: center; background-attachment: fixed; }
+        /* Прячем скроллбар для горизонтального меню, но оставляем прокрутку */
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Плавность для смены фонов */
+        body { 
+            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out; 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            background-color: #fdf2f8; /* Базовый розовый фон */
+        }
+        
         .progress-bar-fill { transition: width 1s linear; }
         .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 192, 203, 0.3); }
-        .bg-overlay { background: rgba(253, 242, 248, 0.9); min-height: 100vh; }
     </style>
 </head>
 <body id="body-bg" class="font-sans text-gray-800">
-    <div id="main-overlay" class="bg-overlay p-4 pb-16">
+    <div id="main-overlay" class="p-4 pb-6 min-h-screen">
         
         <div class="flex justify-end mb-2">
             <button onclick="toggleSettings()" class="bg-white/50 p-2 rounded-full shadow-sm text-xl hover:scale-110 transition">⚙️</button>
         </div>
 
         <div class="text-center mb-6">
-            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Соня! 🐈</h1>
-            <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Загрузка времени...</p>
+            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm transition-colors duration-500">Привет, Соня! 🐈</h1>
+            <p class="text-sm text-pink-400 mt-1 font-medium transition-colors duration-500" id="subtitle">Загрузка времени...</p>
         </div>
 
         <div id="settings-menu" class="hidden glass-card rounded-3xl p-4 mb-6 animate-fade-in">
             <h3 class="text-sm font-bold text-pink-500 mb-3 text-center">Выбери стиль фона 🌸</h3>
-            <div class="grid grid-cols-4 gap-2 mb-4">
-                <button onclick="setBg('default')" class="h-12 w-full rounded-xl border-2 border-pink-200 bg-pink-50"></button>
+            
+            <div class="flex overflow-x-auto gap-3 mb-4 hide-scroll snap-x py-1 px-1 scroll-smooth">
+                <button onclick="setBg('default')" class="snap-center shrink-0 h-16 w-16 rounded-xl border-2 border-pink-200 bg-pink-50 shadow-sm"></button>
                 
-                <button onclick="setBg('cat1')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                <button onclick="setBg('cat1')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
                         style="background-image: url('./backgrounds/1.jpg')"></button>
                 
-                <button onclick="setBg('cat2')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                <button onclick="setBg('cat2')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
                         style="background-image: url('./backgrounds/2.jpg')"></button>
                 
-                <button onclick="setBg('flowers')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                <button onclick="setBg('cat3')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
+                        style="background-image: url('./backgrounds/3.jpg')"></button>
+                
+                <button onclick="setBg('flowers')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
                         style="background-image: url('./backgrounds/4.jpg')"></button>
             </div>
+
             <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-pink-100 text-pink-500">
                 Режим слайдера: ВЫКЛ
             </button>
         </div>
 
         <div id="schedule-container"></div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 w-full text-center py-3 bg-gray-900/90 backdrop-blur-md text-gray-400 text-xs">
-        @sonya_uni_schedule_bot
     </div>
 
     <script>
@@ -61,6 +72,16 @@
             'flowers': './backgrounds/4.jpg'
         };
 
+        // Предзагрузка картинок для мгновенной и плавной смены без "моргания"
+        window.onload = () => {
+            Object.values(backgrounds).forEach(url => {
+                if(url) {
+                    const img = new Image();
+                    img.src = url;
+                }
+            });
+        };
+
         let slideshowInterval = null;
 
         function toggleSettings() {
@@ -70,18 +91,25 @@
 
         function setBg(key) {
             const body = document.getElementById('body-bg');
-            const overlay = document.getElementById('main-overlay');
             const title = document.getElementById('main-title');
+            const subtitle = document.getElementById('subtitle');
             
             if (key === 'default' || !backgrounds[key]) {
                 body.style.backgroundImage = 'none';
-                overlay.className = 'bg-overlay p-4 pb-16';
                 title.classList.replace('text-white', 'text-pink-500');
+                subtitle.classList.replace('text-white', 'text-pink-400');
+                title.style.textShadow = 'none';
+                subtitle.style.textShadow = 'none';
             } else {
                 body.style.backgroundImage = `url('${backgrounds[key]}')`;
-                overlay.className = 'bg-black/30 backdrop-blur-[2px] p-4 pb-16 min-height-screen';
                 title.classList.add('text-white');
                 title.classList.remove('text-pink-500');
+                subtitle.classList.add('text-white');
+                subtitle.classList.remove('text-pink-400');
+                
+                // Легкая тень, чтобы белый текст читался даже на ярком и светлом фоне (так как мы убрали затемнение)
+                title.style.textShadow = '0 2px 4px rgba(0,0,0,0.6)';
+                subtitle.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
             }
             localStorage.setItem('selectedBg', key);
         }
@@ -99,7 +127,7 @@
                 slideshowInterval = setInterval(() => {
                     setBg(keys[i]);
                     i = (i + 1) % keys.length;
-                }, 30000); // Смена каждые 30 секунд
+                }, 7000); // Смена каждые 7 секунд
                 btn.innerText = 'Режим слайдера: ВКЛ';
                 btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg';
                 setBg(keys[0]);
@@ -109,30 +137,31 @@
         // Загрузка сохраненного фона
         const saved = localStorage.getItem('selectedBg');
         if (saved) setBg(saved);
+
         // Сообщаем Телеграму, что приложение готово
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
-        window.Telegram.WebApp.setHeaderColor('#FDF2F8'); // bg-pink-50
+        window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
 
         // Полное расписание перенесенное в JavaScript
         const SCHEDULE = {
             'ODD': {
-                1: [ // Понедельник (1)
+                1: [
                     {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Основы теории коммуникации', room: 'К-159'},
                     {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Имиджмейкинг в PR', room: 'К-371'},
                     {num: 5, start: '15:00', end: '16:30', type: 'L', subj: 'Методы исследований', room: 'К-159'}
                 ],
-                2: [ // Вторник
+                2: [
                     {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Теория и практика связей с общественностью', room: 'К-235'},
                     {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Основы теории коммуникации', room: 'К-367'}
                 ],
-                3: [ // Среда
+                3: [
                     {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Кросс-культурные коммуникации', room: 'К-323'},
                     {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в PR', room: 'К-323'},
                     {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323'}
                 ],
-                4: [], // Четверг
-                5: [ // Пятница
+                4: [],
+                5: [
                     {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура', room: 'Ф-Спорткомплекс'},
                     {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'A-102 / A-402'},
                     {num: 3, start: '11:20', end: '12:50', type: 'L', subj: 'Правовое обеспечение', room: 'A-536'}
@@ -166,7 +195,6 @@
             }
         };
 
-        // Вспомогательные функции времени
         function getMoscowTime() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
         }
@@ -190,7 +218,7 @@
         function updateUI() {
             const now = getMoscowTime();
             const weekType = getWeekType(now);
-            const dayOfWeek = now.getDay(); // 0 = ВС, 1 = ПН ...
+            const dayOfWeek = now.getDay(); 
             
             document.getElementById('subtitle').innerText = `Сегодня ${now.toLocaleDateString('ru-RU')} • ${weekType === 'EVEN' ? 'Четная' : 'Нечетная'} неделя`;
 
@@ -199,7 +227,7 @@
             
             if (todayClasses.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-pink-100 mt-10">
+                    <div class="glass-card rounded-3xl p-8 text-center mt-10">
                         <div class="text-4xl mb-3">🌸</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2>
                         <p class="text-gray-500 text-sm">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
@@ -212,7 +240,6 @@
             let isBreak = false;
             let breakEndTime = null;
 
-            // Определяем статусы пар
             todayClasses.forEach((cls, index) => {
                 const start = parseTimeStr(cls.start, now);
                 const end = parseTimeStr(cls.end, now);
@@ -221,7 +248,6 @@
                     currentClass = cls;
                 } else if (now < start) {
                     nextClasses.push(cls);
-                    // Проверяем, не перерыв ли сейчас
                     if (index > 0) {
                         const prevEnd = parseTimeStr(todayClasses[index-1].end, now);
                         if (now > prevEnd && now < start && !currentClass) {
@@ -229,7 +255,7 @@
                             breakEndTime = start;
                         }
                     } else if (!currentClass && index === 0) {
-                        isBreak = true; // Утро до первой пары
+                        isBreak = true; 
                         breakEndTime = start;
                     }
                 }
@@ -237,10 +263,9 @@
 
             let html = '';
 
-            // Если пары закончились
             if (!currentClass && nextClasses.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white rounded-3xl p-8 text-center shadow-sm border border-pink-100 mt-10">
+                    <div class="glass-card rounded-3xl p-8 text-center mt-10">
                         <div class="text-4xl mb-3">✨</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2>
                         <p class="text-gray-500 text-sm">Все пары закончились. Приятного вечера!</p>
@@ -248,57 +273,54 @@
                 return;
             }
 
-            // Рендер активной пары
             if (currentClass) {
                 const start = parseTimeStr(currentClass.start, now);
                 const end = parseTimeStr(currentClass.end, now);
                 const totalDuration = end - start;
                 const passed = now - start;
                 let percentage = (passed / totalDuration) * 100;
-                percentage = Math.max(0, Math.min(100, percentage)); // Ограничитель 0-100
+                percentage = Math.max(0, Math.min(100, percentage)); 
                 
                 const minsLeft = Math.ceil((end - now) / 60000);
                 const typeText = currentClass.type === 'L' ? 'Лекция' : 'Практика';
 
                 html += `
-                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-pink-100 mb-6 relative overflow-hidden">
+                    <div class="glass-card rounded-3xl p-5 mb-6 relative overflow-hidden">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Идет пара 🐾</span>
-                            <span class="text-xs font-bold bg-pink-100 text-pink-500 px-2 py-1 rounded-full">${currentClass.start} - ${currentClass.end}</span>
+                            <span class="text-xs font-bold text-pink-500 uppercase tracking-wider">Идет пара 🐾</span>
+                            <span class="text-xs font-bold bg-pink-100 text-pink-600 px-2 py-1 rounded-full">${currentClass.start} - ${currentClass.end}</span>
                         </div>
-                        <h2 class="text-lg font-bold mb-1">${currentClass.subj}</h2>
-                        <p class="text-sm text-gray-500 mb-4">Ауд: ${currentClass.room} • ${typeText}</p>
+                        <h2 class="text-lg font-bold text-gray-800 mb-1">${currentClass.subj}</h2>
+                        <p class="text-sm text-gray-600 mb-4">Ауд: ${currentClass.room} • ${typeText}</p>
 
-                        <div class="w-full bg-pink-50 rounded-full h-3 mb-1 overflow-hidden">
-                            <div class="progress-bar-fill bg-gradient-to-r from-pink-300 to-pink-500 h-3 rounded-full" style="width: ${percentage}%"></div>
+                        <div class="w-full bg-pink-50/50 rounded-full h-3 mb-1 overflow-hidden">
+                            <div class="progress-bar-fill bg-gradient-to-r from-pink-400 to-pink-500 h-3 rounded-full" style="width: ${percentage}%"></div>
                         </div>
-                        <div class="text-right text-xs text-pink-400 font-medium">Осталось ${minsLeft} мин</div>
+                        <div class="text-right text-xs text-pink-500 font-medium">Осталось ${minsLeft} мин</div>
                     </div>`;
             } 
-            // Рендер перерыва
             else if (isBreak && breakEndTime) {
                 const minsLeft = Math.ceil((breakEndTime - now) / 60000);
                 html += `
-                    <div class="bg-white rounded-3xl p-5 shadow-sm border border-pink-100 mb-6 text-center">
+                    <div class="glass-card rounded-3xl p-5 mb-6 text-center">
                         <h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2>
-                        <p class="text-sm text-gray-500">Следующая пара начнется через <span class="text-pink-500 font-bold">${minsLeft} мин</span></p>
+                        <p class="text-sm text-gray-600">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p>
                     </div>`;
             }
 
-            // Рендер следующих пар
             if (nextClasses.length > 0) {
-                html += `<h3 class="text-md font-bold text-gray-700 ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
+                html += `<h3 class="text-md font-bold text-white drop-shadow-md ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
                 
                 nextClasses.forEach(cls => {
                     const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
                     html += `
-                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-pink-50 flex items-center justify-between opacity-75">
+                        <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
                             <div class="pr-4">
-                                <h4 class="text-sm font-bold text-gray-700">${cls.subj}</h4>
-                                <p class="text-xs text-gray-500">${cls.room} • ${typeText}</p>
+                                <h4 class="text-sm font-bold text-gray-800">${cls.subj}</h4>
+                                <p class="text-xs text-gray-600">${cls.room} • ${typeText}</p>
                             </div>
                             <div class="text-right whitespace-nowrap">
-                                <p class="text-sm font-bold text-gray-600">${cls.start}</p>
+                                <p class="text-sm font-bold text-pink-600">${cls.start}</p>
                             </div>
                         </div>`;
                 });
@@ -308,7 +330,6 @@
             container.innerHTML = html;
         }
 
-        // Запускаем сразу и обновляем каждую секунду для плавности прогресс-бара
         updateUI();
         setInterval(updateUI, 1000);
     </script>
