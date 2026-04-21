@@ -7,25 +7,108 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Прячем скроллбар для красоты */
         body::-webkit-scrollbar { display: none; }
-        body { -ms-overflow-style: none; scrollbar-width: none; }
-        /* Плавность для прогресс-бара */
+        body { -ms-overflow-style: none; scrollbar-width: none; transition: background 0.5s ease; background-size: cover; background-position: center; background-attachment: fixed; }
         .progress-bar-fill { transition: width 1s linear; }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 192, 203, 0.3); }
+        .bg-overlay { background: rgba(253, 242, 248, 0.9); min-height: 100vh; }
     </style>
 </head>
-<body class="bg-pink-50 font-sans text-gray-800 p-4 pb-16">
+<body id="body-bg" class="font-sans text-gray-800">
+    <div id="main-overlay" class="bg-overlay p-4 pb-16">
+        
+        <div class="flex justify-end mb-2">
+            <button onclick="toggleSettings()" class="bg-white/50 p-2 rounded-full shadow-sm text-xl hover:scale-110 transition">⚙️</button>
+        </div>
 
-    <div class="text-center mt-4 mb-6">
-        <h1 class="text-2xl font-bold text-pink-500">Привет, Сонечка! 🐈‍⬛</h1>
-        <p class="text-sm text-pink-400 mt-1" id="subtitle">Синхронизация времени...</p>
+        <div class="text-center mb-6">
+            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Соня! 🐈</h1>
+            <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Загрузка времени...</p>
+        </div>
+
+        <div id="settings-menu" class="hidden glass-card rounded-3xl p-4 mb-6 animate-fade-in">
+            <h3 class="text-sm font-bold text-pink-500 mb-3 text-center">Выбери стиль фона 🌸</h3>
+            <div class="grid grid-cols-4 gap-2 mb-4">
+                <button onclick="setBg('default')" class="h-12 w-full rounded-xl border-2 border-pink-200 bg-pink-50"></button>
+                
+                <button onclick="setBg('cat1')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                        style="background-image: url('./backgrounds/1.jpg')"></button>
+                
+                <button onclick="setBg('cat2')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                        style="background-image: url('./backgrounds/2.jpg')"></button>
+                
+                <button onclick="setBg('flowers')" class="h-12 w-full rounded-xl bg-cover bg-center border-2 border-transparent" 
+                        style="background-image: url('./backgrounds/4.jpg')"></button>
+            </div>
+            <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-pink-100 text-pink-500">
+                Режим слайдера: ВЫКЛ
+            </button>
+        </div>
+
+        <div id="schedule-container"></div>
     </div>
 
-    <div id="schedule-container"></div>
-
-    
+    <div class="fixed bottom-0 left-0 w-full text-center py-3 bg-gray-900/90 backdrop-blur-md text-gray-400 text-xs">
+        @sonya_uni_schedule_bot
+    </div>
 
     <script>
+        const backgrounds = {
+            'default': '', // Оставляем пустым для стандартного розового фона
+            'cat1': './backgrounds/1.jpg',
+            'cat2': './backgrounds/2.jpg',
+            'cat3': './backgrounds/3.jpg',
+            'flowers': './backgrounds/4.jpg'
+        };
+
+        let slideshowInterval = null;
+
+        function toggleSettings() {
+            const menu = document.getElementById('settings-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function setBg(key) {
+            const body = document.getElementById('body-bg');
+            const overlay = document.getElementById('main-overlay');
+            const title = document.getElementById('main-title');
+            
+            if (key === 'default' || !backgrounds[key]) {
+                body.style.backgroundImage = 'none';
+                overlay.className = 'bg-overlay p-4 pb-16';
+                title.classList.replace('text-white', 'text-pink-500');
+            } else {
+                body.style.backgroundImage = `url('${backgrounds[key]}')`;
+                overlay.className = 'bg-black/30 backdrop-blur-[2px] p-4 pb-16 min-height-screen';
+                title.classList.add('text-white');
+                title.classList.remove('text-pink-500');
+            }
+            localStorage.setItem('selectedBg', key);
+        }
+
+        function toggleSlideshow() {
+            const btn = document.getElementById('slide-btn');
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+                btn.innerText = 'Режим слайдера: ВЫКЛ';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-100 text-pink-500';
+            } else {
+                let keys = Object.keys(backgrounds).filter(k => k !== 'default');
+                let i = 0;
+                slideshowInterval = setInterval(() => {
+                    setBg(keys[i]);
+                    i = (i + 1) % keys.length;
+                }, 30000); // Смена каждые 30 секунд
+                btn.innerText = 'Режим слайдера: ВКЛ';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg';
+                setBg(keys[0]);
+            }
+        }
+
+        // Загрузка сохраненного фона
+        const saved = localStorage.getItem('selectedBg');
+        if (saved) setBg(saved);
         // Сообщаем Телеграму, что приложение готово
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
