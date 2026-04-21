@@ -104,7 +104,7 @@
         </div>
 
         <div class="glass-card rounded-3xl p-4 text-center mb-5 shadow-sm smooth-flow">
-            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Сонечка! 🐈‍⬛</h1>
+            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Сонечка! 🐈</h1>
             <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Синхронизация...</p>
         </div>
 
@@ -227,6 +227,7 @@
             }
         });
 
+        // БАЗА ДАННЫХ РАСПИСАНИЯ
         const SCHEDULE = {
             'ODD': {
                 1: [
@@ -243,7 +244,7 @@
                     {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в рекламной и PR-деятельности', room: 'К-323', teacher: 'Губин В.А.'},
                     {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323', teacher: 'Кривошеева Е.В.'}
                 ],
-                4: [],
+                4: [], // Четверг (Пустой день, будет показан Отдых)
                 5: [
                     {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура и спорт', room: 'Ф-Спорткомплекс', teacher: 'Коновалова М.А.'},
                     {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'А-102 / А-402', teacher: 'Лытнева В.В. / Городова Е.А.'},
@@ -289,8 +290,10 @@
                 Object.keys(SCHEDULE[weekKey]).forEach(dayStr => {
                     const dayNum = parseInt(dayStr);
                     const classes = SCHEDULE[weekKey][dayNum];
+                    
+                    html += `<div class="mb-6"><h4 class="text-md font-bold text-gray-800 ml-2 mb-3 drop-shadow-sm font-bold uppercase tracking-wider text-[10px] text-gray-500">${dayNames[dayNum]}</h4><div class="space-y-3">`;
+                    
                     if (classes.length > 0) {
-                        html += `<div class="mb-6"><h4 class="text-md font-bold text-gray-800 ml-2 mb-3 drop-shadow-sm font-bold uppercase tracking-wider text-[10px] text-gray-500">${dayNames[dayNum]}</h4><div class="space-y-3">`;
                         classes.forEach(cls => {
                             const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
                             html += `
@@ -308,8 +311,16 @@
                                     </div>
                                 </div>`;
                         });
-                        html += `</div></div>`;
+                    } else {
+                        // КАРТОЧКА ДЛЯ ДНЕЙ БЕЗ ПАР (ОТДЫХ)
+                        html += `
+                            <div class="glass-card rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-90">
+                                <div class="text-2xl mb-1">✨</div>
+                                <p class="text-sm font-bold text-gray-800 drop-shadow-sm">Отдых!</p>
+                                <p class="text-[11px] text-gray-600 font-medium mt-1">Пар нет, можно заниматься своими делами 🐈</p>
+                            </div>`;
                     }
+                    html += `</div></div>`;
                 });
             });
             document.getElementById('full-schedule-content').innerHTML = html;
