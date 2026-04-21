@@ -7,15 +7,25 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* --- ТОНКИЙ РОЗОВЫЙ СКРОЛЛБАР --- */
+        /* Он будет появляться автоматически только при переполнении экрана */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(244, 114, 182, 0.4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(236, 72, 153, 0.7); }
+        
+        /* Прячем скроллбар ТОЛЬКО для горизонтального меню картинок, чтобы можно было свайпать */
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         
+        /* Плавность для смены фонов (сделали медленнее: 0.8s) */
         body { 
-            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out; 
+            transition: background-image 0.8s ease-in-out, background-color 0.8s ease-in-out; 
             background-size: cover; 
             background-position: center; 
             background-attachment: fixed; 
-            background-color: #fdf2f8;
+            background-color: #fdf2f8; 
+            overflow-x: hidden;
         }
         
         /* ЭФФЕКТ ЖИДКОГО СТЕКЛА */
@@ -27,26 +37,35 @@
             box-shadow: 0 8px 32px 0 rgba(236, 72, 153, 0.1);
         }
 
-        /* Плавное раскрытие меню настроек */
+        /* Плавное раскрытие меню настроек (замедлено и смягчено) */
         #settings-menu {
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                        opacity 0.4s ease-in-out, 
-                        margin 0.5s ease;
+            transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.6s ease-in-out, 
+                        margin 0.8s ease;
             margin-bottom: 0;
         }
 
         #settings-menu.is-open {
-            max-height: 500px; /* Достаточно для раскрытия */
+            max-height: 500px; 
             opacity: 1;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem; /* Равномерный отступ mb-5 */
         }
 
-        /* Общая плавность для всех блоков при изменении их положения */
+        /* Общая плавность (увеличена до 0.8s) */
         .smooth-flow {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Анимация появления блоков (медленный fade-in) */
+        @keyframes slowFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slow-fade {
+            animation: slowFadeIn 0.8s ease-out forwards;
         }
 
         .glass-progress-bg {
@@ -61,19 +80,29 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             transition: width 1s linear;
         }
+        
+        /* Экран приветствия */
+        #splash-screen {
+            transition: opacity 1s ease-in-out, visibility 1s;
+        }
     </style>
 </head>
 <body id="body-bg" class="font-sans text-gray-800">
     
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pink-50/80 backdrop-blur-xl">
+        <div class="text-6xl mb-4 animate-bounce" style="animation-duration: 2s;">🌸</div>
+        <h2 class="text-2xl font-bold text-pink-500 tracking-wide animate-pulse">Привет, Сонечка!</h2>
+    </div>
+
     <div id="main-overlay" class="p-4 pb-6 min-h-screen">
         
-        <div class="flex justify-end mb-2 smooth-flow">
+        <div class="flex justify-end mb-5 smooth-flow">
             <button onclick="toggleSettings()" class="glass-card p-2 rounded-full shadow-sm text-xl hover:scale-110 active:scale-95 transition h-10 w-10 flex items-center justify-center">⚙️</button>
         </div>
 
-        <div class="glass-card rounded-3xl p-4 text-center mb-6 shadow-sm smooth-flow">
-            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Соня! 🐈</h1>
-            <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Загрузка времени...</p>
+        <div class="glass-card rounded-3xl p-4 text-center mb-5 shadow-sm smooth-flow">
+            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Мое расписание 🐈‍⬛</h1>
+            <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Синхронизация...</p>
         </div>
 
         <div id="settings-menu" class="glass-card rounded-3xl shadow-sm">
@@ -88,7 +117,7 @@
                     <button onclick="setBg('flowers')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/4.jpg')"></button>
                 </div>
 
-                <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-white/60 text-pink-500 border border-white/50">
+                <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50">
                     Режим слайдера: ВЫКЛ
                 </button>
             </div>
@@ -101,6 +130,17 @@
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
+
+        // ЛОГИКА ЭКРАНА ПРИВЕТСТВИЯ
+        // Через 1.5 секунды после загрузки начинаем плавно растворять заставку
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            // А через секунду после начала растворения убираем её физически, чтобы можно было нажимать кнопки
+            setTimeout(() => {
+                splash.style.visibility = 'hidden';
+            }, 1000);
+        }, 1500);
 
         const backgrounds = {
             'default': '', 
@@ -144,7 +184,7 @@
                 clearInterval(slideshowInterval);
                 slideshowInterval = null;
                 btn.innerText = 'Режим слайдера: ВЫКЛ';
-                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-white/60 text-pink-500 border border-white/50';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50';
                 if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('slideshowState', 'off');
             } else {
                 let keys = Object.keys(backgrounds).filter(k => k !== 'default');
@@ -250,7 +290,7 @@
             
             if (todayClasses.length === 0) {
                 container.innerHTML = `
-                    <div class="glass-card rounded-3xl p-8 text-center mt-10 animate-fade-in">
+                    <div class="glass-card rounded-3xl p-8 text-center mb-5 animate-slow-fade">
                         <div class="text-4xl mb-3">🌸</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2>
                         <p class="text-gray-600 text-sm font-medium">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
@@ -288,7 +328,7 @@
 
             if (!currentClass && nextClasses.length === 0) {
                 container.innerHTML = `
-                    <div class="glass-card rounded-3xl p-8 text-center mt-10 animate-fade-in">
+                    <div class="glass-card rounded-3xl p-8 text-center mb-5 animate-slow-fade">
                         <div class="text-4xl mb-3">✨</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2>
                         <p class="text-gray-600 text-sm font-medium">Все пары закончились. Приятного вечера!</p>
@@ -308,7 +348,7 @@
                 const typeText = currentClass.type === 'L' ? 'Лекция' : 'Практика';
 
                 html += `
-                    <div class="glass-card rounded-3xl p-5 mb-6 relative overflow-hidden animate-fade-in">
+                    <div class="glass-card rounded-3xl p-5 mb-5 relative overflow-hidden animate-slow-fade">
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-xs font-bold text-pink-500 uppercase tracking-wider">Идет пара 🐾</span>
                             <span class="text-xs font-bold bg-white/70 text-pink-600 px-2 py-1 rounded-full border border-white/50">${currentClass.start} - ${currentClass.end}</span>
@@ -325,19 +365,21 @@
             else if (isBreak && breakEndTime) {
                 const minsLeft = Math.ceil((breakEndTime - now) / 60000);
                 html += `
-                    <div class="glass-card rounded-3xl p-5 mb-6 text-center animate-fade-in">
+                    <div class="glass-card rounded-3xl p-5 mb-5 text-center animate-slow-fade">
                         <h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2>
                         <p class="text-sm text-gray-700 font-medium">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p>
                     </div>`;
             }
 
             if (nextClasses.length > 0) {
-                html += `<h3 class="text-md font-bold text-pink-600 drop-shadow-sm ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
+                html += `<h3 class="text-md font-bold text-pink-600 drop-shadow-sm ml-2 mb-3 mt-2 animate-slow-fade">Дальше по расписанию:</h3><div class="space-y-3">`;
                 
-                nextClasses.forEach(cls => {
+                nextClasses.forEach((cls, index) => {
                     const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
+                    // Добавляем небольшую задержку появления для каждой следующей карточки
+                    const delay = index * 0.15;
                     html += `
-                        <div class="glass-card rounded-2xl p-4 flex items-center justify-between animate-fade-in">
+                        <div class="glass-card rounded-2xl p-4 flex items-center justify-between animate-slow-fade" style="animation-delay: ${delay}s; animation-fill-mode: both;">
                             <div class="pr-4">
                                 <h4 class="text-sm font-bold text-gray-800 drop-shadow-sm">${cls.subj}</h4>
                                 <p class="text-xs text-gray-700 font-medium">${cls.room} • ${typeText}</p>
