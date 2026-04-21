@@ -20,42 +20,58 @@
             background-color: #fdf2f8; /* Базовый розовый фон */
         }
         
-        .progress-bar-fill { transition: width 1s linear; }
-        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 192, 203, 0.3); }
+        /* --- ЭФФЕКТ ЖИДКОГО СТЕКЛА --- */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.45); /* Полупрозрачный белый */
+            backdrop-filter: blur(16px); /* Сильное размытие фона */
+            -webkit-backdrop-filter: blur(16px); /* Для iPhone */
+            border: 1px solid rgba(255, 255, 255, 0.7); /* Белый блик по краям */
+            box-shadow: 0 8px 32px 0 rgba(236, 72, 153, 0.1); /* Легчайшая розовая тень */
+        }
+
+        /* Стеклянная подложка для прогресс-бара */
+        .glass-progress-bg {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Сама розовая полоска загрузки со свечением */
+        .glass-progress-fill {
+            background: linear-gradient(90deg, rgba(244,114,182,0.85) 0%, rgba(236,72,153,0.95) 100%);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 1s linear;
+        }
     </style>
 </head>
 <body id="body-bg" class="font-sans text-gray-800">
+    
     <div id="main-overlay" class="p-4 pb-6 min-h-screen">
         
         <div class="flex justify-end mb-2">
-            <button onclick="toggleSettings()" class="bg-white/50 p-2 rounded-full shadow-sm text-xl hover:scale-110 transition">⚙️</button>
+            <button onclick="toggleSettings()" class="glass-card p-2 rounded-full shadow-sm text-xl hover:scale-110 transition h-10 w-10 flex items-center justify-center">⚙️</button>
         </div>
 
-        <div class="text-center mb-6">
-            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm transition-colors duration-500">Привет, Соня! 🐈</h1>
-            <p class="text-sm text-pink-400 mt-1 font-medium transition-colors duration-500" id="subtitle">Загрузка времени...</p>
+        <div class="glass-card rounded-3xl p-4 text-center mb-6 shadow-sm">
+            <h1 id="main-title" class="text-2xl font-bold text-pink-500 drop-shadow-sm">Привет, Соня! 🐈</h1>
+            <p class="text-sm text-pink-400 mt-1 font-medium" id="subtitle">Загрузка времени...</p>
         </div>
 
         <div id="settings-menu" class="hidden glass-card rounded-3xl p-4 mb-6 animate-fade-in">
             <h3 class="text-sm font-bold text-pink-500 mb-3 text-center">Выбери стиль фона 🌸</h3>
             
             <div class="flex overflow-x-auto gap-3 mb-4 hide-scroll snap-x py-1 px-1 scroll-smooth">
-                <button onclick="setBg('default')" class="snap-center shrink-0 h-16 w-16 rounded-xl border-2 border-pink-200 bg-pink-50 shadow-sm"></button>
-                
-                <button onclick="setBg('cat1')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
-                        style="background-image: url('./backgrounds/1.jpg')"></button>
-                
-                <button onclick="setBg('cat2')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
-                        style="background-image: url('./backgrounds/2.jpg')"></button>
-                
-                <button onclick="setBg('cat3')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
-                        style="background-image: url('./backgrounds/3.jpg')"></button>
-                
-                <button onclick="setBg('flowers')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm" 
-                        style="background-image: url('./backgrounds/4.jpg')"></button>
+                <button onclick="setBg('default')" class="snap-center shrink-0 h-16 w-16 rounded-xl border-2 border-white bg-pink-50 shadow-sm"></button>
+                <button onclick="setBg('cat1')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/1.jpg')"></button>
+                <button onclick="setBg('cat2')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/2.jpg')"></button>
+                <button onclick="setBg('cat3')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/3.jpg')"></button>
+                <button onclick="setBg('flowers')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/4.jpg')"></button>
             </div>
 
-            <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-pink-100 text-pink-500">
+            <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-white/60 text-pink-500 border border-white/50">
                 Режим слайдера: ВЫКЛ
             </button>
         </div>
@@ -65,14 +81,14 @@
 
     <script>
         const backgrounds = {
-            'default': '', // Оставляем пустым для стандартного розового фона
+            'default': '', 
             'cat1': './backgrounds/1.jpg',
             'cat2': './backgrounds/2.jpg',
             'cat3': './backgrounds/3.jpg',
             'flowers': './backgrounds/4.jpg'
         };
 
-        // Предзагрузка картинок для мгновенной и плавной смены без "моргания"
+        // Предзагрузка картинок
         window.onload = () => {
             Object.values(backgrounds).forEach(url => {
                 if(url) {
@@ -89,27 +105,13 @@
             menu.classList.toggle('hidden');
         }
 
+        // Обновленная функция смены фона (текст всегда розовый, так как под ним белое стекло)
         function setBg(key) {
             const body = document.getElementById('body-bg');
-            const title = document.getElementById('main-title');
-            const subtitle = document.getElementById('subtitle');
-            
             if (key === 'default' || !backgrounds[key]) {
                 body.style.backgroundImage = 'none';
-                title.classList.replace('text-white', 'text-pink-500');
-                subtitle.classList.replace('text-white', 'text-pink-400');
-                title.style.textShadow = 'none';
-                subtitle.style.textShadow = 'none';
             } else {
                 body.style.backgroundImage = `url('${backgrounds[key]}')`;
-                title.classList.add('text-white');
-                title.classList.remove('text-pink-500');
-                subtitle.classList.add('text-white');
-                subtitle.classList.remove('text-pink-400');
-                
-                // Легкая тень, чтобы белый текст читался даже на ярком и светлом фоне (так как мы убрали затемнение)
-                title.style.textShadow = '0 2px 4px rgba(0,0,0,0.6)';
-                subtitle.style.textShadow = '0 1px 3px rgba(0,0,0,0.6)';
             }
             localStorage.setItem('selectedBg', key);
         }
@@ -120,16 +122,16 @@
                 clearInterval(slideshowInterval);
                 slideshowInterval = null;
                 btn.innerText = 'Режим слайдера: ВЫКЛ';
-                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-100 text-pink-500';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-300 bg-white/60 text-pink-500 border border-white/50';
             } else {
                 let keys = Object.keys(backgrounds).filter(k => k !== 'default');
                 let i = 0;
                 slideshowInterval = setInterval(() => {
                     setBg(keys[i]);
                     i = (i + 1) % keys.length;
-                }, 7000); // Смена каждые 7 секунд
+                }, 7000); // 7 секунд
                 btn.innerText = 'Режим слайдера: ВКЛ';
-                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg border border-pink-400';
                 setBg(keys[0]);
             }
         }
@@ -138,12 +140,10 @@
         const saved = localStorage.getItem('selectedBg');
         if (saved) setBg(saved);
 
-        // Сообщаем Телеграму, что приложение готово
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
 
-        // Полное расписание перенесенное в JavaScript
         const SCHEDULE = {
             'ODD': {
                 1: [
@@ -230,7 +230,7 @@
                     <div class="glass-card rounded-3xl p-8 text-center mt-10">
                         <div class="text-4xl mb-3">🌸</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Пар больше нет!</h2>
-                        <p class="text-gray-500 text-sm">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
+                        <p class="text-gray-600 text-sm font-medium">Можно отдыхать и заниматься своими делами. Хорошего дня!</p>
                     </div>`;
                 return;
             }
@@ -268,7 +268,7 @@
                     <div class="glass-card rounded-3xl p-8 text-center mt-10">
                         <div class="text-4xl mb-3">✨</div>
                         <h2 class="text-xl font-bold text-gray-800 mb-2">Учеба на сегодня всё!</h2>
-                        <p class="text-gray-500 text-sm">Все пары закончились. Приятного вечера!</p>
+                        <p class="text-gray-600 text-sm font-medium">Все пары закончились. Приятного вечера!</p>
                     </div>`;
                 return;
             }
@@ -288,15 +288,15 @@
                     <div class="glass-card rounded-3xl p-5 mb-6 relative overflow-hidden">
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-xs font-bold text-pink-500 uppercase tracking-wider">Идет пара 🐾</span>
-                            <span class="text-xs font-bold bg-pink-100 text-pink-600 px-2 py-1 rounded-full">${currentClass.start} - ${currentClass.end}</span>
+                            <span class="text-xs font-bold bg-white/70 text-pink-600 px-2 py-1 rounded-full border border-white/50">${currentClass.start} - ${currentClass.end}</span>
                         </div>
-                        <h2 class="text-lg font-bold text-gray-800 mb-1">${currentClass.subj}</h2>
-                        <p class="text-sm text-gray-600 mb-4">Ауд: ${currentClass.room} • ${typeText}</p>
+                        <h2 class="text-lg font-bold text-gray-800 mb-1 drop-shadow-sm">${currentClass.subj}</h2>
+                        <p class="text-sm text-gray-700 mb-4 font-medium">Ауд: ${currentClass.room} • ${typeText}</p>
 
-                        <div class="w-full bg-pink-50/50 rounded-full h-3 mb-1 overflow-hidden">
-                            <div class="progress-bar-fill bg-gradient-to-r from-pink-400 to-pink-500 h-3 rounded-full" style="width: ${percentage}%"></div>
+                        <div class="w-full glass-progress-bg rounded-full h-3 mb-1 overflow-hidden">
+                            <div class="glass-progress-fill h-3 rounded-full" style="width: ${percentage}%"></div>
                         </div>
-                        <div class="text-right text-xs text-pink-500 font-medium">Осталось ${minsLeft} мин</div>
+                        <div class="text-right text-xs text-pink-600 font-bold drop-shadow-sm">Осталось ${minsLeft} мин</div>
                     </div>`;
             } 
             else if (isBreak && breakEndTime) {
@@ -304,20 +304,20 @@
                 html += `
                     <div class="glass-card rounded-3xl p-5 mb-6 text-center">
                         <h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2>
-                        <p class="text-sm text-gray-600">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p>
+                        <p class="text-sm text-gray-700 font-medium">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p>
                     </div>`;
             }
 
             if (nextClasses.length > 0) {
-                html += `<h3 class="text-md font-bold text-white drop-shadow-md ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
+                html += `<h3 class="text-md font-bold text-pink-600 drop-shadow-sm ml-2 mb-3">Дальше по расписанию:</h3><div class="space-y-3">`;
                 
                 nextClasses.forEach(cls => {
                     const typeText = cls.type === 'L' ? 'Лекция' : 'Практика';
                     html += `
                         <div class="glass-card rounded-2xl p-4 flex items-center justify-between">
                             <div class="pr-4">
-                                <h4 class="text-sm font-bold text-gray-800">${cls.subj}</h4>
-                                <p class="text-xs text-gray-600">${cls.room} • ${typeText}</p>
+                                <h4 class="text-sm font-bold text-gray-800 drop-shadow-sm">${cls.subj}</h4>
+                                <p class="text-xs text-gray-700 font-medium">${cls.room} • ${typeText}</p>
                             </div>
                             <div class="text-right whitespace-nowrap">
                                 <p class="text-sm font-bold text-pink-600">${cls.start}</p>
