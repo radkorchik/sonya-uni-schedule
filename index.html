@@ -74,8 +74,13 @@
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #full-schedule-modal {
-            transition: opacity 0.5s ease-in-out;
+        .modal-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Моноширинный шрифт для бегущих миллисекунд, чтобы текст не дергался */
+        .time-ms-font {
+            font-variant-numeric: tabular-nums;
         }
     </style>
 </head>
@@ -87,7 +92,19 @@
         <p id="splash-compliment" class="text-pink-400 font-medium text-lg text-center px-4 drop-shadow-sm"></p>
     </div>
 
-    <div id="full-schedule-modal" class="fixed inset-0 z-40 hidden flex-col bg-pink-50/85 backdrop-blur-xl p-4 overflow-y-auto opacity-0">
+    <div id="meme-modal" class="fixed inset-0 z-50 hidden flex-col bg-pink-50/90 backdrop-blur-xl p-6 items-center justify-center opacity-0 modal-transition">
+        <button onclick="closeMeme()" class="absolute top-6 right-6 glass-card w-12 h-12 rounded-full flex items-center justify-center text-xl hover:scale-110 active:scale-95 transition">❌</button>
+        <h2 class="text-2xl font-bold text-pink-500 mb-6 drop-shadow-sm text-center">Минутка отдыха 😹</h2>
+        
+        <div id="meme-content" class="w-full max-w-sm max-h-[60vh] rounded-3xl overflow-hidden shadow-lg border-2 border-white/70 mb-8 flex items-center justify-center bg-white/30 p-2">
+            </div>
+        
+        <button onclick="loadMeme()" class="glass-card w-full max-w-sm py-4 rounded-3xl text-sm font-bold text-pink-500 shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span>🎲</span> Показать другой мем
+        </button>
+    </div>
+
+    <div id="full-schedule-modal" class="fixed inset-0 z-40 hidden flex-col bg-pink-50/85 backdrop-blur-xl p-4 overflow-y-auto opacity-0 modal-transition">
         <div class="flex justify-between items-center mb-5 mt-2">
             <h2 class="text-2xl font-bold text-pink-600 drop-shadow-sm">Всё расписание 🗓️</h2>
             <button onclick="toggleFullSchedule()" class="glass-card w-10 h-10 rounded-full flex items-center justify-center text-lg hover:scale-110 active:scale-95 transition">❌</button>
@@ -97,7 +114,10 @@
 
     <div id="main-overlay" class="p-4 pb-6 min-h-screen">
         
-        <div class="flex justify-end mb-5 smooth-flow">
+        <div class="flex justify-end mb-5 gap-3 smooth-flow">
+            <button onclick="openMeme()" class="glass-card p-2 rounded-full shadow-sm text-xl hover:scale-110 active:scale-95 transition h-10 w-10 flex items-center justify-center">
+                <span>😹</span>
+            </button>
             <button onclick="toggleSettings()" class="glass-card p-2 rounded-full shadow-sm text-xl hover:scale-110 active:scale-95 transition h-10 w-10 flex items-center justify-center">
                 <span id="cog-icon">⚙️</span>
             </button>
@@ -120,8 +140,12 @@
                     <button onclick="setBg('flowers')" class="snap-center shrink-0 h-16 w-16 rounded-xl bg-cover bg-center shadow-sm border border-white/50" style="background-image: url('./backgrounds/4.jpg')"></button>
                 </div>
 
-                <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50">
+                <button id="slide-btn" onclick="toggleSlideshow()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50 mb-2">
                     Режим слайдера: ВЫКЛ
+                </button>
+
+                <button id="ms-btn" onclick="toggleMsMode()" class="w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50">
+                    Мем-таймер (мс): ВЫКЛ
                 </button>
             </div>
         </div>
@@ -141,6 +165,45 @@
         window.Telegram.WebApp.expand();
         window.Telegram.WebApp.setHeaderColor('#FDF2F8'); 
 
+        // --- ЛОГИКА МЕМОВ ---
+        const memeUrls = [
+            'https://media.tenor.com/PytWA2vK1qEAAAAd/cat-cat-meme.gif', // Cat typing
+            'https://media.tenor.com/Z8hzXVQ4oKMAAAAd/cat-dance.gif',    // Cat dance
+            'https://media.tenor.com/y3_jCj7E1cQAAAAC/vibing-cat.gif',   // Vibing cat
+            'https://media.tenor.com/Hn2T4uF-H-QAAAAC/cat-meme.gif',     // Huh cat
+            'https://media.tenor.com/nJ_a2w_8nBcAAAAd/cat-funny.gif',    // Happy happy
+            'https://media.tenor.com/71B9vV7Ew4IAAAAC/cat-typing.gif',   // Serious typing cat
+            'https://media.tenor.com/xTszrG3c6tEAAAAC/cat-kiss.gif'      // Kissing cat
+        ];
+
+        function loadMeme() {
+            const container = document.getElementById('meme-content');
+            const randomUrl = memeUrls[Math.floor(Math.random() * memeUrls.length)];
+            container.innerHTML = `<img src="${randomUrl}" class="w-full h-auto rounded-2xl shadow-inner">`;
+        }
+
+        function openMeme() {
+            const modal = document.getElementById('meme-modal');
+            loadMeme();
+            modal.classList.remove('hidden');
+            void modal.offsetWidth; 
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMeme() {
+            const modal = document.getElementById('meme-modal');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                document.getElementById('meme-content').innerHTML=''; 
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // --- ЛОГИКА ЭКРАНА ПРИВЕТСТВИЯ ---
         const compliments = [
             "Ты сегодня super slay 💅",
             "Выглядишь прекрасно! 🥰",
@@ -151,11 +214,10 @@
         setTimeout(() => {
             const splash = document.getElementById('splash-screen');
             splash.style.opacity = '0';
-            setTimeout(() => {
-                splash.style.visibility = 'hidden';
-            }, 1000);
+            setTimeout(() => { splash.style.visibility = 'hidden'; }, 1000);
         }, 2500);
 
+        // --- НАСТРОЙКИ ---
         const backgrounds = {
             'default': '', 
             'cat1': './backgrounds/1.jpg',
@@ -166,36 +228,26 @@
 
         window.onload = () => {
             Object.values(backgrounds).forEach(url => {
-                if(url) {
-                    const img = new Image();
-                    img.src = url;
-                }
+                if(url) { const img = new Image(); img.src = url; }
             });
         };
 
         let slideshowInterval = null;
+        let isMsMode = false; // Состояние режима миллисекунд
 
         function toggleSettings() {
             const menu = document.getElementById('settings-menu');
             const cog = document.getElementById('cog-icon');
             menu.classList.toggle('is-open');
-            if (menu.classList.contains('is-open')) {
-                cog.style.transform = 'rotate(180deg)';
-            } else {
-                cog.style.transform = 'rotate(0deg)';
-            }
+            if (menu.classList.contains('is-open')) { cog.style.transform = 'rotate(180deg)'; } 
+            else { cog.style.transform = 'rotate(0deg)'; }
         }
 
         function setBg(key, saveToCloud = true) {
             const body = document.getElementById('body-bg');
-            if (key === 'default' || !backgrounds[key]) {
-                body.style.backgroundImage = 'none';
-            } else {
-                body.style.backgroundImage = `url('${backgrounds[key]}')`;
-            }
-            if (saveToCloud) {
-                window.Telegram.WebApp.CloudStorage.setItem('selectedBg', key);
-            }
+            if (key === 'default' || !backgrounds[key]) { body.style.backgroundImage = 'none'; } 
+            else { body.style.backgroundImage = `url('${backgrounds[key]}')`; }
+            if (saveToCloud) { window.Telegram.WebApp.CloudStorage.setItem('selectedBg', key); }
         }
 
         function toggleSlideshow(saveToCloud = true) {
@@ -204,7 +256,7 @@
                 clearInterval(slideshowInterval);
                 slideshowInterval = null;
                 btn.innerText = 'Режим слайдера: ВЫКЛ';
-                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50 mb-2';
                 if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('slideshowState', 'off');
             } else {
                 let keys = Object.keys(backgrounds).filter(k => k !== 'default');
@@ -214,16 +266,32 @@
                     i = (i + 1) % keys.length;
                 }, 7000); 
                 btn.innerText = 'Режим слайдера: ВКЛ';
-                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg border border-pink-400';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase bg-pink-500 text-white shadow-lg border border-pink-400 mb-2';
                 if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('slideshowState', 'on');
                 setBg(keys[0], false);
             }
         }
 
-        window.Telegram.WebApp.CloudStorage.getItems(['selectedBg', 'slideshowState'], function(error, values) {
+        function toggleMsMode(saveToCloud = true) {
+            const btn = document.getElementById('ms-btn');
+            isMsMode = !isMsMode;
+            if (!isMsMode) {
+                btn.innerText = 'Мем-таймер (мс): ВЫКЛ';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-white/60 text-pink-500 border border-white/50';
+                if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('msState', 'off');
+            } else {
+                btn.innerText = 'Мем-таймер (мс): ВКЛ';
+                btn.className = 'w-full py-2 rounded-2xl text-xs font-bold uppercase tracking-widest transition duration-500 bg-pink-500 text-white shadow-lg border border-pink-400';
+                if (saveToCloud) window.Telegram.WebApp.CloudStorage.setItem('msState', 'on');
+            }
+            updateFastTimers(); // Мгновенно обновить текст
+        }
+
+        window.Telegram.WebApp.CloudStorage.getItems(['selectedBg', 'slideshowState', 'msState'], function(error, values) {
             if (!error && values) {
                 if (values.selectedBg) setBg(values.selectedBg, false);
                 if (values.slideshowState === 'on') toggleSlideshow(false); 
+                if (values.msState === 'on') toggleMsMode(false);
             }
         });
 
@@ -244,7 +312,7 @@
                     {num: 3, start: '11:20', end: '12:50', type: 'P', subj: 'Деловые коммуникации в рекламной и PR-деятельности', room: 'К-323', teacher: 'Губин В.А.'},
                     {num: 4, start: '13:20', end: '14:50', type: 'P', subj: 'Методы исследований в рекламе и PR', room: 'К-323', teacher: 'Кривошеева Е.В.'}
                 ],
-                4: [], // Четверг (Пустой день, будет показан Отдых)
+                4: [],
                 5: [
                     {num: 1, start: '08:00', end: '09:30', type: 'P', subj: 'Физическая культура и спорт', room: 'Ф-Спорткомплекс', teacher: 'Коновалова М.А.'},
                     {num: 2, start: '09:40', end: '11:10', type: 'P', subj: 'Иностранный язык', room: 'А-102 / А-402', teacher: 'Лытнева В.В. / Городова Е.А.'},
@@ -312,7 +380,6 @@
                                 </div>`;
                         });
                     } else {
-                        // КАРТОЧКА ДЛЯ ДНЕЙ БЕЗ ПАР (ОТДЫХ)
                         html += `
                             <div class="glass-card rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-90">
                                 <div class="text-2xl mb-1">✨</div>
@@ -360,11 +427,38 @@
             return d;
         }
 
+        // --- ЛОГИКА ОТОБРАЖЕНИЯ И ТАЙМЕРОВ ---
+        function updateFastTimers() {
+            const now = getMoscowTime().getTime();
+            document.querySelectorAll('.time-left-display').forEach(el => {
+                const end = parseInt(el.dataset.endTime);
+                const prefix = el.dataset.prefix;
+                let diffMs = end - now;
+                if (diffMs < 0) diffMs = 0;
+                
+                if (isMsMode) {
+                    el.innerText = `${prefix}${diffMs} мс`;
+                } else {
+                    const totalMins = Math.ceil(diffMs / 60000);
+                    const h = Math.floor(totalMins / 60);
+                    const m = totalMins % 60;
+                    if (h > 0) {
+                        el.innerText = `${prefix}${h} ч ${m} мин`;
+                    } else {
+                        el.innerText = `${prefix}${m} мин`;
+                    }
+                }
+            });
+        }
+
+        // Запускаем супер-быстрый интервал для миллисекунд (обновляется 20 раз в секунду)
+        setInterval(updateFastTimers, 50);
+
         function updateUI() {
-            const now = getMoscowTime();
-            const weekType = getWeekType(now);
-            const dayOfWeek = now.getDay(); 
-            document.getElementById('subtitle').innerText = `Сегодня ${now.toLocaleDateString('ru-RU')} • ${weekType === 'EVEN' ? 'Четная' : 'Нечетная'} неделя`;
+            const nowTime = getMoscowTime();
+            const weekType = getWeekType(nowTime);
+            const dayOfWeek = nowTime.getDay(); 
+            document.getElementById('subtitle').innerText = `Сегодня ${nowTime.toLocaleDateString('ru-RU')} • ${weekType === 'EVEN' ? 'Четная' : 'Нечетная'} неделя`;
             const todayClasses = SCHEDULE[weekType][dayOfWeek] || [];
             const container = document.getElementById('schedule-container');
             
@@ -376,13 +470,13 @@
             let currentClass = null; let nextClasses = []; let isBreak = false; let breakEndTime = null;
 
             todayClasses.forEach((cls, index) => {
-                const start = parseTimeStr(cls.start, now); const end = parseTimeStr(cls.end, now);
-                if (now >= start && now <= end) { currentClass = cls; }
-                else if (now < start) {
+                const start = parseTimeStr(cls.start, nowTime); const end = parseTimeStr(cls.end, nowTime);
+                if (nowTime >= start && nowTime <= end) { currentClass = cls; }
+                else if (nowTime < start) {
                     nextClasses.push(cls);
                     if (index > 0) {
-                        const prevEnd = parseTimeStr(todayClasses[index-1].end, now);
-                        if (now > prevEnd && now < start && !currentClass) { isBreak = true; breakEndTime = start; }
+                        const prevEnd = parseTimeStr(todayClasses[index-1].end, nowTime);
+                        if (nowTime > prevEnd && nowTime < start && !currentClass) { isBreak = true; breakEndTime = start; }
                     } else if (!currentClass && index === 0) { isBreak = true; breakEndTime = start; }
                 }
             });
@@ -394,11 +488,11 @@
             }
 
             if (currentClass) {
-                const start = parseTimeStr(currentClass.start, now); const end = parseTimeStr(currentClass.end, now);
-                const totalDuration = end - start; const passed = now - start;
+                const start = parseTimeStr(currentClass.start, nowTime); const end = parseTimeStr(currentClass.end, nowTime);
+                const totalDuration = end - start; const passed = nowTime - start;
                 let percentage = Math.max(0, Math.min(100, (passed / totalDuration) * 100)); 
-                const minsLeft = Math.ceil((end - now) / 60000);
                 const typeText = currentClass.type === 'L' ? 'Лекция' : 'Практика';
+                
                 html += `
                     <div class="glass-card rounded-3xl p-5 mb-5 relative overflow-hidden">
                         <div class="flex justify-between items-center mb-3">
@@ -411,12 +505,11 @@
                             <p class="text-xs text-gray-700 font-medium">🚪 ${currentClass.room} • ${typeText}</p>
                         </div>
                         <div class="w-full glass-progress-bg rounded-full h-3 mb-1 overflow-hidden"><div class="glass-progress-fill h-3 rounded-full" style="width: ${percentage}%"></div></div>
-                        <div class="text-right text-[10px] text-pink-600 font-bold">Осталось ${minsLeft} мин</div>
+                        <div class="text-right text-[10px] text-pink-600 font-bold time-ms-font time-left-display" data-prefix="Осталось " data-end-time="${end.getTime()}"></div>
                     </div>`;
             } 
             else if (isBreak && breakEndTime) {
-                const minsLeft = Math.ceil((breakEndTime - now) / 60000);
-                html += `<div class="glass-card rounded-3xl p-5 mb-5 text-center"><h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2><p class="text-sm text-gray-700 font-medium">Следующая пара начнется через <span class="text-pink-600 font-bold">${minsLeft} мин</span></p></div>`;
+                html += `<div class="glass-card rounded-3xl p-5 mb-5 text-center"><h2 class="text-lg font-bold text-gray-800 mb-1">Перерыв ☕</h2><p class="text-sm text-gray-700 font-medium"><span class="text-pink-600 font-bold time-ms-font time-left-display" data-prefix="Начнется через " data-end-time="${breakEndTime.getTime()}"></span></p></div>`;
             }
 
             if (nextClasses.length > 0) {
@@ -440,7 +533,10 @@
                 html += `</div>`;
             }
             container.innerHTML = html;
+            updateFastTimers(); // Сразу проставляем текст таймеров, чтобы не было пустых мест
         }
+        
+        // Этот интервал отвечает только за отрисовку самих блоков и прогресс-бара раз в секунду
         updateUI(); setInterval(updateUI, 1000);
     </script>
 </body>
